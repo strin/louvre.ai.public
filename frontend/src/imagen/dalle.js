@@ -24,7 +24,7 @@ export const generate_photos = async (prompt) => {
       const task_updated = await response_task_updated.json();
       console.log("dall e", task_updated);
       if (task_updated && task_updated.status === "succeeded") {
-        return task_updated.generation;
+        return task_updated;
       }
       await timeout(1000);
     }
