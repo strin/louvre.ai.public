@@ -1,27 +1,44 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import styled from "styled-components";
+
+import { get_pic_url, set_pic_url } from "../state";
+
+const ImageContainer = styled.div`
+  background-image: url(${(props) => props.url});
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  width: 100vw;
+  height: 100vh;
+`;
 
 function Picture() {
   const [searchParams, _] = useSearchParams();
   const pictureId = searchParams.get("id");
   console.log("picture id", pictureId);
-  const localStorageKey = "museum-pic-" + pictureId;
-  const [pictureURL, setPictureURL] = useState(
-    localStorage.getItem(localStorageKey)
-  );
+  const [pictureURL, setPictureURL] = useState("");
 
   useEffect(() => {
-    console.log("adding event");
-    window.addEventListener("storage", () => {
-      console.log("storage changed");
-      const _pictureURL = localStorage.getItem(localStorageKey);
+    window.addEventListener("click", () => {
+      const elem = document.documentElement;
+      elem.requestFullscreen();
+    });
+    const fetchPictureURL = async () => {
+      const _pictureURL = await get_pic_url(pictureId);
+      console.log("pictureURL for id", pictureId, _pictureURL);
       if (_pictureURL) {
         setPictureURL(_pictureURL);
       }
-      console.log("Picture URL changed for", pictureId, _pictureURL);
-    });
+    };
+    window.setInterval(fetchPictureURL, 3000);
   }, []);
-  return <img src={pictureURL} />;
+  return (
+    <div>
+      <ImageContainer url={pictureURL} />
+      hi
+    </div>
+  );
 }
 
 export default Picture;

@@ -8,6 +8,8 @@ CORS(app)
 
 BEARER_TOKEN = "sess-6Wqq6szgzNRRFQOQXITwxpkhJ5EjGbPISEED3xfm"
 
+picture_urls = {}
+
 
 @app.route("/dalle/create", methods=["GET"])
 def create_dalle():
@@ -71,6 +73,23 @@ def get_dalle():
         return 'Error', 500
 
     return result
+
+
+@app.route('/picture/set', methods=['PUT'])
+def set_picture():
+    pic_id = request.args['id']
+    pic_url = request.args['url']
+
+    picture_urls[pic_id] = pic_url
+
+    return 'OK'
+
+
+@app.route('/picture/get', methods=['GET'])
+def get_picture():
+    pic_id = request.args['id']
+
+    return picture_urls.get(pic_id, '')
 
 
 @app.route("/")
