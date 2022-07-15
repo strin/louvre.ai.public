@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { ArwesThemeProvider, StylesBaseline, Text, Button } from "@arwes/core";
+import {
+  ArwesThemeProvider,
+  StylesBaseline,
+  Text,
+  Button,
+  LoadingBars,
+} from "@arwes/core";
 import { BleepsProvider, BleepsAudioSettings } from "@arwes/sounds";
 import logo from "../logo.svg";
 import { generate_photos } from "../imagen/dalle";
@@ -48,6 +54,13 @@ const ButtonContainer = styled.div`
   }
 `;
 
+const ProgressContainer = styled.div`
+  margin-top: 25px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 200px;
+`;
+
 // Theme with default settings.
 const themeSettings = {};
 
@@ -59,6 +72,28 @@ function Main() {
   }, [activate]);
 
   const [query, setQuery] = useState("");
+
+  const [progressActivate, setProgressActivate] = React.useState(false);
+  const [progress, setProgress] = React.useState(0);
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      setActivate(!progressActivate);
+      if (!progressActivate) {
+        setProgress(0);
+      }
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [progressActivate]);
+
+  React.useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (progress < 90) {
+        setProgress(progress + 1);
+      }
+    }, 200);
+    return () => clearTimeout(timeout);
+  }, [progress]);
 
   return (
     <ArwesThemeProvider themeSettings={themeSettings}>
@@ -87,9 +122,27 @@ function Main() {
             setQuery(e.target.value);
           }}
         />
+
+        <ProgressContainer>
+          {progressActivate && (
+            <LoadingBars
+              animator={{ progressActivate }}
+              determinate
+              progress={progress}
+            />
+          )}
+        </ProgressContainer>
+
         <ButtonContainer>
           <Button
             onClick={async () => {
+              if (progressActivate) {
+                console.warn("There is another task in progress. Please wait");
+                return;
+              }
+              setProgressActivate(true);
+              setProgress(0);
+
               const result = await generate_photos(query);
               console.log("dalle result", result);
 
@@ -99,6 +152,7 @@ function Main() {
                 const generation = generations[it].generation;
                 set_pic_url(it, generation.image_path);
               }
+              setProgressActivate(false);
             }}
           >
             Submit
