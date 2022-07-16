@@ -35,11 +35,25 @@ const bleepsSettings = {
 
 const duration = { enter: 1000, exit: 1000 };
 
-const Input = styled.input`
+const InputContainer = styled.div`
+  position: relative;
   margin-top: 300px;
   margin-left: auto;
   margin-right: auto;
   max-width: 50vw;
+  height: 50px;
+  text-align: right;
+
+  kbd {
+    position: absolute;
+    margin-top: 10px;
+    margin-left: -50px;
+  }
+`;
+
+const Input = styled.input`
+  position: absolute;
+  width: 100%;
 `;
 
 const ButtonContainer = styled.div`
@@ -95,6 +109,42 @@ function Main() {
     return () => clearTimeout(timeout);
   }, [progress]);
 
+  const submit = async () => {
+    if (progressActivate) {
+      console.warn("There is another task in progress. Please wait");
+      return;
+    }
+    console.log("query", query);
+
+    setProgressActivate(true);
+    setProgress(0);
+
+    const result = await generate_photos(query);
+    console.log("dalle result", result);
+
+    const generations = result.generations.data;
+    console.log("generations", generations);
+    for (let it = 0; it < generations.length; it++) {
+      const generation = generations[it].generation;
+      set_pic_url(it, generation.image_path);
+    }
+    setProgressActivate(false);
+  };
+
+  const handleKeypress = (e) => {
+    if (e.key === "Enter") {
+      submit();
+    }
+  };
+
+  React.useEffect(() => {
+    window.addEventListener("keypress", handleKeypress);
+
+    return () => {
+      window.removeEventListener("keypress", handleKeypress);
+    };
+  }, [submit]);
+
   return (
     <ArwesThemeProvider themeSettings={themeSettings}>
       <StylesBaseline
@@ -115,13 +165,16 @@ function Main() {
           <p>This is Louvre in the age of AGI.</p>
         </Text>*/}
 
-        <Input
-          defaultValue={""}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-          }}
-        />
+        <InputContainer>
+          <kbd>Enter</kbd>
+          <Input
+            defaultValue={""}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+            }}
+          />
+        </InputContainer>
 
         <ProgressContainer>
           {progressActivate && (
@@ -134,29 +187,8 @@ function Main() {
         </ProgressContainer>
 
         <ButtonContainer>
-          <Button
-            onClick={async () => {
-              if (progressActivate) {
-                console.warn("There is another task in progress. Please wait");
-                return;
-              }
-              setProgressActivate(true);
-              setProgress(0);
+          <Button onClick={submit}>Submit</Button>
 
-              const result = await generate_photos(query);
-              console.log("dalle result", result);
-
-              const generations = result.generations.data;
-              console.log("generations", generations);
-              for (let it = 0; it < generations.length; it++) {
-                const generation = generations[it].generation;
-                set_pic_url(it, generation.image_path);
-              }
-              setProgressActivate(false);
-            }}
-          >
-            Submit
-          </Button>
           <Button
             onClick={() => {
               setQuery("");

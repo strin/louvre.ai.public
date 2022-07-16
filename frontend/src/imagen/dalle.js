@@ -7,7 +7,7 @@ export const generate_photos = async (prompt) => {
 
   // TODO: sanity check prompt.
   const response_task = await fetch(
-    "http://localhost:8888/dalle/create?" +
+    "/api/dalle/create?" +
       new URLSearchParams({
         prompt,
       })
@@ -18,8 +18,7 @@ export const generate_photos = async (prompt) => {
   if (task && task.id) {
     for (let it = 0; it < num_max_retry; it++) {
       const response_task_updated = await fetch(
-        "http://localhost:8888/dalle/task?" +
-          new URLSearchParams({ id: task.id })
+        "/api/dalle/task?" + new URLSearchParams({ id: task.id })
       );
       const task_updated = await response_task_updated.json();
       console.log("dall e", task_updated);
