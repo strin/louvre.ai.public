@@ -36,7 +36,6 @@ function Picture() {
   return (
     <div>
       <ImageContainer url={pictureURL} />
-      hi
     </div>
   );
 }
