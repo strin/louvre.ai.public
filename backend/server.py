@@ -2,11 +2,12 @@ from flask import Flask, request
 from flask_cors import CORS
 import requests
 import json
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-BEARER_TOKEN = "sess-6Wqq6szgzNRRFQOQXITwxpkhJ5EjGbPISEED3xfm"
+BEARER_TOKEN = os.environ['BEARER_TOKEN']
 
 picture_urls = {}
 
@@ -33,7 +34,7 @@ def create_dalle():
                                  "task_type": "text2im",
                                  "prompt": {
                                      "caption": prompt,
-                                     "batch_size": 6
+                                     "batch_size": 4
                                  }
                              })
     raw_response = response.text
